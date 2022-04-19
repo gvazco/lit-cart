@@ -51,6 +51,144 @@ export class LitCart extends LitElement {
     this.prod = products;
   }
 
+  render() {
+    return html`
+      <get-data url="../dbProducts.json" method="GET"></get-data>
+      <div>${this.headerTemplate}</div>
+      <div class="container">
+        <div class="wrapper">${this.dataTemplate}</div>
+      </div>
+    `;
+  }
+
+  get dataTemplate() {
+    return html`
+      ${this.prod.map(
+        (product) => html`
+          <div class="card" accesskey="${product.id}">
+            <div class="card-content">
+              <img
+                src="${product.image}"
+                class="card-img-top"
+                alt="${product.name}"
+              />
+              <div class="card-body">
+                <h5 class="card-title">${product.name}</h5>
+                <p class="card-text">${product.extraInfo}</p>
+                <p class="card-text">$ ${product.price} MXN</p>
+                <button
+                  type="button"
+                  class="btn btn-cart"
+                  @click="${this._addProductCart}"
+                >
+                  Añadir al carrito
+                </button>
+              </div>
+            </div>
+          </div>
+        `
+      )}
+    `;
+  }
+
+  get headerTemplate() {
+    const products = this.prod;
+
+    // Convertimos el resultado del localStorage en un array
+    const localStorageItems = localStorage.getItem(this.cart);
+
+    if (!localStorageItems) {
+      this.strHtml = html`
+        <div class="cart-product empty">
+          <p><b>Ooops!</b> No hay productos en su carrito.</p>
+        </div>
+      `;
+    } else {
+      let obj = [];
+
+      const idProductsSplit = localStorageItems.split(",");
+
+      // Eliminamos los ID's duplicados
+      const idProductsCart = Array.from(new Set(idProductsSplit));
+
+      idProductsCart.forEach((id) => {
+        products.forEach((product) => {
+          if (id == product.id) {
+            // Cuantificamos duplicados
+            let quantity = this.countDuplicatesId(id, idProductsSplit);
+
+            // Contabilizamos precios
+            let totalPrice = product.price * quantity;
+
+            product["sum"] = totalPrice;
+            product["quantity"] = quantity;
+
+            obj.push(product);
+
+            this.strHtml = obj.map(
+              (p) => html`<div class="cart-product" accesskey=${p.id}>
+                <img src="${p.image}" alt="${p.name}" />
+                <div class="cart-product-info">
+                  <span class="quantity">${p.quantity}</span>
+
+                  <p>${p.name}</p>
+                  <p>$ ${p.sum.toFixed(2)}</p>
+                  <p class="change-quantity">
+                    <button @click="${this._decreaseQuantity}">-</button>
+                    <button @click="${this._increaseQuantity}">+</button>
+                  </p>
+                  <p class="cart-product-delete">
+                    <button @click="${this._deleteProductCart}">
+                      Eliminar
+                    </button>
+                  </p>
+                </div>
+              </div>`
+            );
+          }
+        });
+      });
+    }
+
+    return html`
+      <nav class="navbar">
+        <div class="containerNav">
+          <img class="logo" alt="open-wc logo" src=${logo} />
+
+          <div class="collapse navbar-collapse">
+            <ul class="navbar-nav mr-auto">
+              <li class="nav-item active">
+                <a class="nav-link" href="./">Lit-Element</a>
+              </li>
+
+              <li class="nav-item active">
+                <a
+                  class="nav-link"
+                  target="_blank"
+                  href="https://vanillateamtres.vercel.app/"
+                  >Vanilla</a
+                >
+              </li>
+            </ul>
+            <div class="cart-container">
+              <button
+                class="btn btn-secondary cart"
+                type="button"
+                @click="${this._openCloseCart}"
+              >
+                <img class="" src="${cart}" alt="Carrito" />
+              </button>
+              <div id="cart-products" class="cart-products hidden">
+                ${this.strHtml}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+    `;
+  }
+
   _addProductCart(event) {
     const idProduct = event.path[3].accessKey;
 
@@ -168,145 +306,7 @@ export class LitCart extends LitElement {
     this.requestUpdate();
   }
 
-  render() {
-    return html`
-      <get-data url="../dbProducts.json" method="GET"></get-data>
-      <div>${this.headerTemplate}</div>
-      <div class="container">
-        <div class="wrapper">${this.dataTemplate}</div>
-      </div>
-    `;
-  }
-
-  get dataTemplate() {
-    return html`
-      ${this.prod.map(
-        (product) => html`
-          <div class="card" accesskey="${product.id}">
-            <div class="card-content">
-              <img
-                src="${product.image}"
-                class="card-img-top"
-                alt="${product.name}"
-              />
-              <div class="card-body">
-                <h5 class="card-title">${product.name}</h5>
-                <p class="card-text">${product.extraInfo}</p>
-                <p class="card-text">$ ${product.price} MXN</p>
-                <button
-                  type="button"
-                  class="btn btn-cart"
-                  @click="${this._addProductCart}"
-                >
-                  Añadir al carrito
-                </button>
-              </div>
-            </div>
-          </div>
-        `
-      )}
-    `;
-  }
-
-  get headerTemplate() {
-    const products = this.prod;
-
-    // Convertimos el resultado del localStorage en un array
-    const localStorageItems = localStorage.getItem(this.cart);
-
-    if (!localStorageItems) {
-      this.strHtml = html`
-        <div class="cart-product empty">
-          <p><b>Ooops!</b> No hay productos en su carrito.</p>
-        </div>
-      `;
-    } else {
-      let obj = [];
-
-      const idProductsSplit = localStorageItems.split(",");
-
-      // Eliminamos los ID's duplicados
-      const idProductsCart = Array.from(new Set(idProductsSplit));
-
-      idProductsCart.forEach((id) => {
-        products.forEach((product) => {
-          if (id == product.id) {
-            // Cuantificamos duplicados
-            let quantity = this._countDuplicatesId(id, idProductsSplit);
-
-            // Contabilizamos precios
-            let totalPrice = product.price * quantity;
-
-            product["sum"] = totalPrice;
-            product["quantity"] = quantity;
-
-            obj.push(product);
-
-            this.strHtml = obj.map(
-              (p) => html`<div class="cart-product" accesskey=${p.id}>
-                <img src="${p.image}" alt="${p.name}" />
-                <div class="cart-product-info">
-                  <span class="quantity">${p.quantity}</span>
-
-                  <p>${p.name}</p>
-                  <p>$ ${p.sum.toFixed(2)}</p>
-                  <p class="change-quantity">
-                    <button @click="${this._decreaseQuantity}">-</button>
-                    <button @click="${this._increaseQuantity}">+</button>
-                  </p>
-                  <p class="cart-product-delete">
-                    <button @click="${this._deleteProductCart}">
-                      Eliminar
-                    </button>
-                  </p>
-                </div>
-              </div>`
-            );
-          }
-        });
-      });
-    }
-
-    return html`
-      <nav class="navbar">
-        <div class="containerNav">
-          <img class="logo" alt="open-wc logo" src=${logo} />
-
-          <div class="collapse navbar-collapse">
-            <ul class="navbar-nav mr-auto">
-              <li class="nav-item active">
-                <a class="nav-link" href="./">Lit-Element</a>
-              </li>
-
-              <li class="nav-item active">
-                <a
-                  class="nav-link"
-                  target="_blank"
-                  href="https://vanillateamtres.vercel.app/"
-                  >Vanilla</a
-                >
-              </li>
-            </ul>
-            <div class="cart-container">
-              <button
-                class="btn btn-secondary cart"
-                type="button"
-                @click="${this._openCloseCart}"
-              >
-                <img class="" src="${cart}" alt="Carrito" />
-              </button>
-              <div id="cart-products" class="cart-products hidden">
-                ${this.strHtml}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-    `;
-  }
-
-  _countDuplicatesId(value, arrIds) {
+  countDuplicatesId(value, arrIds) {
     let count = 0;
 
     arrIds.forEach((id) => {
