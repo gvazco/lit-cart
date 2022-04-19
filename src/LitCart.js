@@ -11,7 +11,6 @@ const cart = new URL("../assets/img/cart.png", import.meta.url).href;
 export class LitCart extends LitElement {
   static get properties() {
     return {
-      count: { type: Number },
       prod: { type: Array },
       cart: { type: Array },
       strHtml: { type: Array },
@@ -71,6 +70,7 @@ export class LitCart extends LitElement {
     }
 
     this.localStorageItems = window.localStorage.cartProductsId;
+    this.requestUpdate();
   }
 
   _openCloseCart() {
@@ -115,7 +115,7 @@ export class LitCart extends LitElement {
       localStorage.removeItem(this.cart);
     }
 
-    this.headerTemplate;
+    this.requestUpdate();
   }
 
   _increaseQuantity(event) {
@@ -137,7 +137,7 @@ export class LitCart extends LitElement {
     });
     localStorage.setItem(this.cart, idsString);
 
-    this.headerTemplate;
+    this.requestUpdate();
   }
 
   _decreaseQuantity(event) {
@@ -164,7 +164,7 @@ export class LitCart extends LitElement {
 
     localStorage.setItem(this.cart, idsString);
 
-    this.headerTemplate;
+    this.requestUpdate();
   }
 
   render() {
