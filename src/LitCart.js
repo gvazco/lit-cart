@@ -43,6 +43,8 @@ export class LitCart extends LitElement {
         image: product.image,
         extraInfo: product.extraInfo,
         price: product.price,
+        sum: "",
+        quantity: 0,
       });
     });
 
@@ -69,7 +71,6 @@ export class LitCart extends LitElement {
       localStorage.setItem(this.cart, productsId);
     }
 
-    this.localStorageItems = window.localStorage.cartProductsId;
     this.requestUpdate();
   }
 
@@ -209,6 +210,7 @@ export class LitCart extends LitElement {
 
   get headerTemplate() {
     const products = this.prod;
+
     // Convertimos el resultado del localStorage en un array
     const localStorageItems = localStorage.getItem(this.cart);
 
@@ -219,34 +221,35 @@ export class LitCart extends LitElement {
         </div>
       `;
     } else {
+      let obj = [];
+
       const idProductsSplit = localStorageItems.split(",");
 
       // Eliminamos los ID's duplicados
       const idProductsCart = Array.from(new Set(idProductsSplit));
 
-      let obj = [];
-
       idProductsCart.forEach((id) => {
         products.forEach((product) => {
           if (id == product.id) {
             // Cuantificamos duplicados
-            const quantity = this.countDuplicatesId(id, idProductsSplit);
+            let quantity = this._countDuplicatesId(id, idProductsSplit);
+
             // Contabilizamos precios
-            const totalPrice = product.price * quantity;
+            let totalPrice = product.price * quantity;
+
+            product["sum"] = totalPrice;
+            product["quantity"] = quantity;
 
             obj.push(product);
 
             this.strHtml = obj.map(
-              (product) => html`<div
-                class="cart-product"
-                accesskey=${product.id}
-              >
-                <img src="${product.image}" alt="${product.name}" />
+              (p) => html`<div class="cart-product" accesskey=${p.id}>
+                <img src="${p.image}" alt="${p.name}" />
                 <div class="cart-product-info">
-                  <span class="quantity">${quantity}</span>
+                  <span class="quantity">${p.quantity}</span>
 
-                  <p>${product.name}</p>
-                  <p>$ ${totalPrice.toFixed(2)}</p>
+                  <p>${p.name}</p>
+                  <p>$ ${p.sum.toFixed(2)}</p>
                   <p class="change-quantity">
                     <button @click="${this._decreaseQuantity}">-</button>
                     <button @click="${this._increaseQuantity}">+</button>
@@ -303,7 +306,7 @@ export class LitCart extends LitElement {
     `;
   }
 
-  countDuplicatesId(value, arrIds) {
+  _countDuplicatesId(value, arrIds) {
     let count = 0;
 
     arrIds.forEach((id) => {
