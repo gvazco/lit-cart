@@ -158,7 +158,7 @@ export default css`
 
   /* -------------------------------- Bootstrap ------------------------------- */
 
-  .container {
+  .containerNav {
     width: 100%;
     padding-right: 15px;
     padding-left: 15px;
@@ -175,7 +175,7 @@ export default css`
     background-color: #343a41;
   }
 
-  .navbar > .container {
+  .navbar > .containerNav {
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
@@ -203,17 +203,17 @@ export default css`
   }
 
   @media (min-width: 1200px) {
-    .container {
+    .containerNav {
       max-width: 1140px !important;
     }
   }
 
   @media (min-width: 992px) {
-    .container {
+    .containerNav {
       max-width: 960px;
     }
 
-    .navbar > .container {
+    .navbar > .containerNav {
       -ms-flex-wrap: nowrap;
       flex-wrap: nowrap;
     }

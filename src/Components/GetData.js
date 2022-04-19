@@ -15,11 +15,8 @@ export class GetData extends LitElement {
     this.cart = [];
   }
 
-  shouldUpdate() {
+  connectedCallback() {
     this.getProductsDb();
-  }
-  firstUpdated() {
-    this.loadProductCart();
   }
 
   _sendData(data) {
